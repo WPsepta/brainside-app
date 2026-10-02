@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#05030d">
+<title>Images — Brain Side</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<link rel="stylesheet" href="glass.css?v=23">
+<script src="theme.js?v=23"></script>
+<style>
+html{height:100%}
+body{min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;position:relative;z-index:1;background:#0a0a0c}
+
+.profile-topbar{position:fixed;top:0;left:0;right:0;z-index:999;height:52px;margin:10px 14px 0;padding:0 6px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:16px;background:#141417;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.profile-topbar-title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:800;letter-spacing:-.01em;color:#fff;pointer-events:none;white-space:nowrap}
+.back-btn,.header-spacer{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:transparent;border:none;cursor:pointer;transition:transform .3s cubic-bezier(.34,1.4,.5,1),color .2s;flex-shrink:0;padding:0;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.back-btn:hover{transform:scale(1.12);color:var(--accent)}
+.back-btn:active{transform:scale(.92)}
+.back-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.page-main{flex:1;max-width:900px;width:100%;margin:0 auto;padding:86px 16px 40px}
+.page-hero{display:flex;flex-direction:column;align-items:center;margin-bottom:22px;gap:8px}
+.page-icon{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:rgba(10,132,255,.16);border:1px solid rgba(10,132,255,.32);color:var(--accent)}
+.page-icon svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.page-title{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.page-sub{font-size:13px;color:#8a8a92;text-align:center;max-width:420px;line-height:1.5}
+
+.col-header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:14px;background:#141417;border:1px solid rgba(255,255,255,.08);font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8a8a92;position:sticky;top:74px;z-index:5;margin-bottom:10px}
+.col-header .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--accent)}
+.col-header .count{margin-left:auto;font-size:10.5px;color:#6a6a72;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.06)}
+
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+@media (max-width:640px){.image-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}}
+.image-card{aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#141417;border:1px solid rgba(255,255,255,.08);box-shadow:0 4px 16px rgba(0,0,0,.3);position:relative;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.4,.5,1)}
+.image-card:hover{transform:translateY(-3px) scale(1.02)}
+.image-card img{width:100%;height:100%;object-fit:cover;display:block}
+/* ⭐ Badge solid */
+.image-card-badge{position:absolute;top:6px;left:6px;padding:3px 8px;border-radius:999px;font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.image-card-badge.ai{background:#0a84ff;color:#fff;border:1px solid rgba(255,255,255,.25)}
+.image-card-badge.user{background:#34c759;color:#fff;border:1px solid rgba(255,255,255,.25)}
+.image-card-info{position:absolute;left:0;right:0;bottom:0;padding:6px 8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.85));color:#fff;font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.image-card-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:8px;gap:6px;color:#6a6a72;text-align:center}
+.image-card-placeholder svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--accent)}
+.image-card-placeholder span{font-size:10px;font-weight:700;line-height:1.15;word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.empty-state{text-align:center;padding:40px 16px;color:#6a6a72;grid-column:1/-1}
+.empty-icon{width:52px;height:52px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);display:grid;place-items:center;margin:0 auto 12px;color:#6a6a72}
+.empty-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.empty-title{font-size:13px;font-weight:700;color:#8a8a92;margin-bottom:4px}
+.empty-sub{font-size:11.5px;line-height:1.5}
+
+.skeleton{background:linear-gradient(90deg,#1a1a1d 25%,#262626 50%,#1a1a1d 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-tile{aspect-ratio:1/1;border-radius:14px}
+
+.lightbox{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;background:#000;padding:0}
+.lightbox.show{display:flex}
+.lightbox img{width:100vw;height:100vh;max-width:100vw;max-height:100vh;object-fit:contain;user-select:none;display:block}
+.lightbox-toolbar{position:fixed;top:16px;right:16px;display:flex;gap:8px;z-index:2}
+.lightbox-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.25);cursor:pointer;padding:0}
+.lightbox-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+
+<header class="profile-topbar">
+  <a class="back-btn" href="chat.html" aria-label="Kembali"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <div class="profile-topbar-title">Images</div>
+  <div class="header-spacer"></div>
+</header>
+
+<main class="page-main">
+  <div class="page-hero">
+    <div class="page-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+    <div class="page-title">Images</div>
+    <div class="page-sub">Semua gambar dari chat kamu dan AI, di satu tempat.</div>
+  </div>
+
+  <div class="col-header">
+    <span class="dot"></span>Semua Gambar
+    <span class="count" id="countAll">0</span>
+  </div>
+  <div class="image-grid" id="imageGrid"></div>
+</main>
+
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-toolbar">
+    <button class="lightbox-btn" id="lightboxSave" title="Simpan"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <button class="lightbox-btn" id="lightboxBack" title="Kembali"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <img id="lightboxImg" src="" alt="" />
+</div>
+
+<script type="module">
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const imageGrid = document.getElementById('imageGrid');
+const countAll = document.getElementById('countAll');
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const lightboxSave = document.getElementById('lightboxSave');
+const lightboxBack = document.getElementById('lightboxBack');
+
+let currentUrl = null, currentName = 'image.jpg';
+function openLightbox(url, name) { currentUrl = url; currentName = name || 'image.jpg'; lightboxImg.src = url; lightbox.classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeLightbox() { lightbox.classList.remove('show'); lightboxImg.src = ''; currentUrl = null; document.body.style.overflow = ''; }
+lightboxBack.addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', function(e){ if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && lightbox.classList.contains('show')) closeLightbox(); });
+lightboxSave.addEventListener('click', function(e){
+  e.stopPropagation(); if (!currentUrl) return;
+  const a = document.createElement('a'); a.href = currentUrl; a.download = currentName;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+});
+
+function renderEmpty(title, sub) {
+  imageGrid.innerHTML = '<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div><div class="empty-title">' + title + '</div><div class="empty-sub">' + sub + '</div></div>';
+}
+function renderSkeleton() {
+  imageGrid.innerHTML = '<div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div>';
+}
+function renderList(imgs) {
+  countAll.textContent = imgs.length;
+  if (!imgs.length) { renderEmpty('Belum ada gambar', 'Gambar yang dikirim di chat akan muncul di sini.'); return; }
+  imageGrid.innerHTML = '';
+  imgs.forEach(function(img) {
+    const card = document.createElement('div');
+    card.className = 'image-card';
+    const isAI = img.role === 'ai';
+    const badge = document.createElement('div');
+    badge.className = 'image-card-badge ' + (isAI ? 'ai' : 'user');
+    badge.textContent = isAI ? '🎭 AI' : '👤 Kamu';
+    card.appendChild(badge);
+    if (img.dataUrl) {
+      const im = document.createElement('img');
+      im.src = img.dataUrl; im.alt = img.name || ''; im.loading = 'lazy';
+      card.appendChild(im);
+      card.addEventListener('click', function(){ openLightbox(img.dataUrl, img.name); });
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'image-card-placeholder';
+      ph.innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span>' + (img.name || 'image') + '</span>';
+      card.appendChild(ph);
+    }
+    const info = document.createElement('div');
+    info.className = 'image-card-info';
+    info.textContent = img.chatTitle || 'Chat';
+    card.appendChild(info);
+    imageGrid.appendChild(card);
+  });
+}
+
+renderSkeleton();
+
+onAuthStateChanged(auth, async function(user) {
+  if (!user) { countAll.textContent = '0'; renderEmpty('Belum login', 'Login dulu buat lihat gambar.'); return; }
+  try {
+    const chatsRef = collection(db, 'users', user.uid, 'chats');
+    const snap = await getDocs(query(chatsRef, orderBy('createdAt', 'desc')));
+    const imgs = [];
+    for (const chatDoc of snap.docs) {
+      const chatTitle = (chatDoc.data() || {}).title || 'Chat';
+      const msgsRef = collection(db, 'users', user.uid, 'chats', chatDoc.id, 'messages');
+      const msgsSnap = await getDocs(msgsRef);
+      msgsSnap.forEach(function(m) {
+        const d = m.data() || {};
+        const role = d.role === 'ai' ? 'ai' : 'user';
+        const list = d.files || (d.file ? [d.file] : []);
+        list.forEach(function(f) {
+          const isImage = (f.type && f.type.indexOf('image/') === 0) || !!f.dataUrl;
+          if (!isImage) return;
+          imgs.push({ name: f.name, type: f.type, dataUrl: f.dataUrl, chatTitle: chatTitle, role: role });
+        });
+      });
+    }
+    renderList(imgs);
+  } catch (e) { renderEmpty('Gagal memuat', 'Coba refresh halaman.'); }
+});
+</script>
+
+</body>
+</html>

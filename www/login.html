@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" data-auth="guest">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#05030d">
+<title>Masuk — Brain Side</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<link rel="stylesheet" href="glass.css?v=23">
+<script src="theme.js?v=23"></script>
+<style>
+html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;height:100%}
+body{min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;position:relative;z-index:1;background:#0a0a0c}
+.loading-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:24px;background:#0a0a0c}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:90px;height:90px;position:relative;display:flex;align-items:center;justify-content:center}
+.loading-ring{position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent);border-right-color:var(--accent);animation:loadingSpin .9s cubic-bezier(.5,.1,.4,.9) infinite}
+.loading-ring.ring-2{inset:8px;border-top-color:rgba(10,132,255,.45);border-right-color:rgba(10,132,255,.45);border-left-color:rgba(10,132,255,.75);animation-duration:1.4s;animation-direction:reverse}
+@keyframes loadingSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.loading-logo{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,rgba(10,132,255,.22),rgba(0,102,214,.12));border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;overflow:hidden;animation:logoPulse 1.6s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.loading-logo img{width:72%;height:72%;object-fit:contain}
+.loading-text{font-size:13.5px;font-weight:700;color:#fff;letter-spacing:.02em;opacity:.85}
+
+/* ⭐ Topbar SOLID */
+.profile-topbar{position:sticky;top:0;z-index:50;height:52px;margin:10px 14px 0;padding:0 6px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:16px;background:#141417;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.profile-topbar-title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:800;letter-spacing:-.01em;color:#fff;pointer-events:none;white-space:nowrap}
+.back-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:transparent;border:none;cursor:pointer;transition:transform .3s cubic-bezier(.34,1.4,.5,1),color .2s;flex-shrink:0;padding:0;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.back-btn:hover{transform:scale(1.12);color:var(--accent)}
+.back-btn:active{transform:scale(.92)}
+.back-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.header-spacer{width:36px;height:36px;flex-shrink:0}
+
+.auth-main{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px 24px 60px}
+.auth-card{width:min(380px,100%);text-align:center;animation:fadeIn .5s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.auth-logo{width:96px;height:96px;margin:0 auto 20px;display:grid;place-items:center;overflow:visible}
+.auth-logo img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 18px var(--accent-glow))}
+.auth-title{font-size:24px;font-weight:800;letter-spacing:-.02em;color:#fff;margin-bottom:6px}
+.auth-sub{font-size:13px;color:#8a8a92;line-height:1.55;margin-bottom:22px}
+
+/* ⭐ Quick login card SOLID */
+.quick-login-card{display:none;width:100%;padding:14px 14px 14px 12px;border-radius:18px;margin-bottom:16px;text-align:left;align-items:center;gap:12px;background:#141417;border:1px solid rgba(0,122,255,.35);box-shadow:0 6px 24px rgba(0,122,255,.18);cursor:pointer;transition:transform .25s cubic-bezier(.34,1.4,.5,1),box-shadow .25s ease,border-color .2s ease;position:relative;animation:quickIn .45s ease both;user-select:none;-webkit-tap-highlight-color:transparent}
+@keyframes quickIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.quick-login-card.show{display:flex}
+.quick-login-card:hover{transform:translateY(-2px);border-color:rgba(0,122,255,.6);box-shadow:0 10px 32px rgba(0,122,255,.28)}
+.quick-login-card:active{transform:translateY(0) scale(.98)}
+.quick-login-card.loading{pointer-events:none;opacity:.7}
+.quick-login-card.loading .quick-arrow{animation:quickSpin .9s linear infinite}
+@keyframes quickSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.quick-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-dark));display:grid;place-items:center;font-weight:800;font-size:17px;color:#fff;flex-shrink:0;overflow:hidden;background-size:cover;background-position:center}
+.quick-avatar.has-photo{background-image:var(--avatar-url,none);background-color:transparent;font-size:0;color:transparent;border:none}
+.quick-info{flex:1;min-width:0}
+.quick-label{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.quick-name{font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick-email{font-size:11.5px;color:#6a6a72;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick-hint{font-size:10px;color:var(--accent);margin-top:4px;font-weight:600;opacity:.85}
+.quick-arrow{width:30px;height:30px;border-radius:50%;background:rgba(0,122,255,.2);border:1px solid rgba(0,122,255,.35);display:grid;place-items:center;color:var(--accent);flex-shrink:0;transition:transform .3s cubic-bezier(.34,1.4,.5,1),background .2s}
+.quick-login-card:hover .quick-arrow{background:rgba(0,122,255,.35);transform:translateX(3px)}
+.quick-arrow svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.quick-clear{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ff3b30,#c41a10);color:#fff;border:2px solid #0a0a0c;cursor:pointer;padding:0;z-index:3;transition:transform .25s cubic-bezier(.34,1.4,.5,1);-webkit-tap-highlight-color:transparent;box-shadow:0 4px 12px rgba(255,59,48,.4)}
+.quick-clear:hover{transform:scale(1.15)}
+.quick-clear:active{transform:scale(.9)}
+.quick-clear svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.quick-divider{display:none;align-items:center;gap:10px;width:100%;margin-bottom:16px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6a6a72}
+.quick-divider.show{display:flex}
+.quick-divider::before,.quick-divider::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.1)}
+
+.auth-tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:#141417;border:1px solid rgba(255,255,255,.08);margin-bottom:18px}
+.auth-tab{flex:1;padding:9px;border-radius:10px;font-size:13px;font-weight:700;color:#8a8a92;background:transparent;border:none;cursor:pointer;font-family:inherit;transition:all .2s}
+.auth-tab:hover{color:#fff;background:rgba(255,255,255,.06)}
+.auth-tab.active{color:#fff;background:rgba(0,122,255,.22);box-shadow:inset 0 0 0 1px rgba(0,122,255,.35)}
+.auth-panel{display:none}
+.auth-panel.active{display:block;animation:fadeIn .35s ease both}
+.auth-msg{border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;text-align:left;display:none}
+.auth-msg.show{display:block}
+.auth-msg.error{border:1px solid rgba(255,100,100,.42);background:rgba(255,80,80,.14);color:#ffc9c9}
+.auth-msg.success{border:1px solid rgba(52,211,153,.42);background:rgba(52,211,153,.14);color:#a7f3d0}
+.auth-field{position:relative;margin-bottom:10px}
+.auth-field input{width:100%;height:46px;padding:0 46px 0 40px;border-radius:12px;background:#141417;border:1px solid rgba(255,255,255,.14);color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s,background .2s}
+.auth-field input::placeholder{color:#6a6a72}
+.auth-field input:focus{border-color:var(--accent);background:#1a1a1d;box-shadow:0 0 0 3px rgba(10,132,255,.16)}
+.auth-field > svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#6a6a72;pointer-events:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.auth-field-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#6a6a72;background:transparent;border:none;cursor:pointer;padding:0;transition:color .2s,background .2s;-webkit-tap-highlight-color:transparent}
+.auth-field-toggle:hover{color:#fff;background:rgba(255,255,255,.06)}
+.auth-field-toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.auth-field-toggle .eye-off{display:none}
+.auth-field-toggle.revealed .eye-on{display:none}
+.auth-field-toggle.revealed .eye-off{display:block}
+
+.auth-remember{display:flex;align-items:center;gap:10px;padding:10px 4px 4px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;font-size:13px;color:#8a8a92}
+.auth-remember input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.auth-remember .checkmark{width:20px;height:20px;border-radius:7px;background:#141417;border:1.5px solid rgba(255,255,255,.22);display:grid;place-items:center;flex-shrink:0;transition:background .2s,border-color .2s,transform .25s cubic-bezier(.34,1.4,.5,1)}
+.auth-remember .checkmark svg{width:12px;height:12px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.6);transition:opacity .18s,transform .25s cubic-bezier(.34,1.4,.5,1)}
+.auth-remember input:checked + .checkmark{background:linear-gradient(135deg,var(--accent),var(--accent-dark));border-color:rgba(0,122,255,.5);box-shadow:0 4px 12px var(--accent-glow)}
+.auth-remember input:checked + .checkmark svg{opacity:1;transform:scale(1)}
+.auth-remember:hover .checkmark{border-color:rgba(0,122,255,.5)}
+.auth-remember .remember-text{font-weight:600;line-height:1.3}
+
+.auth-submit{width:100%;height:46px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:12px;box-shadow:0 6px 20px var(--accent-glow);transition:transform .3s cubic-bezier(.34,1.4,.5,1),filter .2s}
+.auth-submit:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.08)}
+.auth-submit:disabled{opacity:.5;cursor:not-allowed}
+@media (max-width:640px){.auth-main{padding:20px 20px 40px}.auth-title{font-size:22px}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner">
+    <div class="loading-ring"></div>
+    <div class="loading-ring ring-2"></div>
+    <div class="loading-logo"><img src="favicon.png" alt="" onerror="this.style.display='none'"></div>
+  </div>
+  <div class="loading-text" id="loadingText">Memproses...</div>
+</div>
+
+<header class="profile-topbar">
+  <a class="back-btn" href="chat.html" aria-label="Kembali"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <div class="profile-topbar-title">Masuk</div>
+  <div class="header-spacer"></div>
+</header>
+
+<main class="auth-main">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="favicon.png" alt="" onerror="this.style.display='none'">
+    </div>
+    <h1 class="auth-title">Selamat datang di Brain Side</h1>
+    <p class="auth-sub">Ngobrol, coding, dan generate — semua di satu tempat.</p>
+
+    <div class="quick-login-card" id="quickLoginCard">
+      <button class="quick-clear" id="quickClear" type="button" aria-label="Hapus akun tersimpan">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="quick-avatar" id="quickAvatar">?</div>
+      <div class="quick-info">
+        <div class="quick-label">Lanjutkan dengan</div>
+        <div class="quick-name" id="quickName">-</div>
+        <div class="quick-email" id="quickEmail">-</div>
+        <div class="quick-hint">Ketuk untuk masuk otomatis</div>
+      </div>
+      <div class="quick-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div class="quick-divider" id="quickDivider">atau akun lain</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" type="button">Masuk</button>
+      <button class="auth-tab" id="tabRegister" type="button">Daftar</button>
+    </div>
+
+    <div class="auth-panel active" id="panelLogin">
+      <div class="auth-msg" id="msgLogin"></div>
+      <form id="formLogin" autocomplete="on">
+        <div class="auth-field">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <input type="email" id="loginEmail" placeholder="Email" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+          <button type="button" class="auth-field-toggle" id="toggleLoginPw" aria-label="Tampilkan password">
+            <svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+        <label class="auth-remember" for="rememberPw">
+          <input type="checkbox" id="rememberPw" checked>
+          <span class="checkmark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="remember-text">Ingat saya (login otomatis)</span>
+        </label>
+        <button type="submit" class="auth-submit" id="btnLogin">Masuk</button>
+      </form>
+    </div>
+
+    <div class="auth-panel" id="panelRegister">
+      <div class="auth-msg" id="msgRegister"></div>
+      <form id="formRegister" autocomplete="on">
+        <div class="auth-field">
+          <svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="regUsername" placeholder="Username (3-20)" autocomplete="username" required minlength="3" maxlength="20">
+        </div>
+        <div class="auth-field">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <input type="email" id="regEmail" placeholder="Email" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <input type="password" id="regPassword" placeholder="Password (min 6)" autocomplete="new-password" required minlength="6">
+          <button type="button" class="auth-field-toggle" id="toggleRegPw" aria-label="Tampilkan password">
+            <svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+        <button type="submit" class="auth-submit" id="btnRegister">Daftar</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { auth, db } from './firebase-config.js';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const $ = (id) => document.getElementById(id);
+const loadingOverlay = $('loadingOverlay');
+const loadingText = $('loadingText');
+const LAST_ACCOUNT_KEY = 'bs_last_account_v2';
+const OBF_KEY = 'bs_2o24_s3cur3_salt_v1';
+
+function obfuscate(str) {
+  try {
+    if (!str) return '';
+    const wrapped = OBF_KEY + '|' + str + '|' + OBF_KEY;
+    let xored = '';
+    for (let i = 0; i < wrapped.length; i++) xored += String.fromCharCode(wrapped.charCodeAt(i) ^ OBF_KEY.charCodeAt(i % OBF_KEY.length));
+    return btoa(unescape(encodeURIComponent(xored)));
+  } catch (_) { return ''; }
+}
+function deobfuscate(enc) {
+  try {
+    if (!enc) return '';
+    const raw = decodeURIComponent(escape(atob(enc)));
+    let xored = '';
+    for (let i = 0; i < raw.length; i++) xored += String.fromCharCode(raw.charCodeAt(i) ^ OBF_KEY.charCodeAt(i % OBF_KEY.length));
+    const prefix = OBF_KEY + '|';
+    const suffix = '|' + OBF_KEY;
+    if (xored.startsWith(prefix) && xored.endsWith(suffix)) return xored.slice(prefix.length, xored.length - suffix.length);
+    return '';
+  } catch (_) { return ''; }
+}
+function saveLastAccount(info) {
+  try { localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ email: info.email || '', password: info.password ? obfuscate(info.password) : '', username: info.username || '', photoBase64: info.photoBase64 || null, time: Date.now() })); } catch (_) {}
+}
+function getLastAccount() {
+  try {
+    const raw = localStorage.getItem(LAST_ACCOUNT_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || !data.email) return null;
+    return { email: data.email, password: data.password ? deobfuscate(data.password) : '', username: data.username || '', photoBase64: data.photoBase64 || null };
+  } catch (_) { return null; }
+}
+function clearLastAccount() { try { localStorage.removeItem(LAST_ACCOUNT_KEY); } catch (_) {} }
+
+function showLoading(text) { if (text) loadingText.textContent = text; loadingOverlay.classList.add('show'); document.body.style.overflow = 'hidden'; }
+function hideLoading() { loadingOverlay.classList.remove('show'); document.body.style.overflow = ''; }
+function setLoadingText(text) { loadingText.textContent = text; }
+
+let isRedirecting = false;
+function goToChat() {
+  if (isRedirecting) return;
+  isRedirecting = true;
+  setLoadingText('Mengalihkan...');
+  try { sessionStorage.removeItem('bs_chat_rendered'); } catch (_) {}
+  requestAnimationFrame(function(){ window.location.replace('chat.html'); });
+}
+
+function renderQuickLogin() {
+  const acc = getLastAccount();
+  const card = $('quickLoginCard');
+  const divider = $('quickDivider');
+  if (!acc || !acc.email) { card.classList.remove('show'); divider.classList.remove('show'); return; }
+  const name = acc.username || acc.email.split('@')[0] || 'User';
+  $('quickName').textContent = name;
+  $('quickEmail').textContent = acc.email;
+  const avatarEl = $('quickAvatar');
+  if (acc.photoBase64) { avatarEl.classList.add('has-photo'); avatarEl.style.setProperty('--avatar-url', `url("${acc.photoBase64}")`); avatarEl.textContent = ''; }
+  else { avatarEl.classList.remove('has-photo'); avatarEl.style.removeProperty('--avatar-url'); avatarEl.textContent = (name[0] || '?').toUpperCase(); }
+  card.classList.add('show');
+  divider.classList.add('show');
+}
+
+let isAutoLoggingIn = false;
+$('quickLoginCard').addEventListener('click', async function(e) {
+  if (e.target.closest('#quickClear')) return;
+  if (isAutoLoggingIn) return;
+  const acc = getLastAccount();
+  if (!acc || !acc.email || !acc.password) {
+    if ($('loginEmail') && acc) $('loginEmail').value = acc.email;
+    if ($('loginPassword')) $('loginPassword').focus();
+    return;
+  }
+  isAutoLoggingIn = true;
+  const card = $('quickLoginCard');
+  card.classList.add('loading');
+  showLoading('Masuk otomatis...');
+  try {
+    await signInWithEmailAndPassword(auth, acc.email, acc.password);
+    goToChat();
+  } catch (err) {
+    isAutoLoggingIn = false;
+    card.classList.remove('loading');
+    hideLoading();
+    clearLastAccount();
+    card.classList.remove('show');
+    $('quickDivider').classList.remove('show');
+    setTab('login');
+    if ($('loginEmail')) $('loginEmail').value = acc.email;
+    if ($('loginPassword')) { $('loginPassword').value = ''; $('loginPassword').focus(); }
+    showMsg($('msgLogin'), 'error', 'Login otomatis gagal. Silakan masukkan password manual.');
+  }
+});
+
+$('quickClear').addEventListener('click', function(e) {
+  e.stopPropagation();
+  clearLastAccount();
+  $('quickLoginCard').classList.remove('show');
+  $('quickDivider').classList.remove('show');
+  if ($('loginEmail')) $('loginEmail').value = '';
+  if ($('loginPassword')) $('loginPassword').value = '';
+});
+
+let initialAuthFired = false;
+onAuthStateChanged(auth, (user) => {
+  if (initialAuthFired) return;
+  initialAuthFired = true;
+  if (user) {
+    if (sessionStorage.getItem('bs_registering') === '1') return;
+    showLoading('Mengalihkan...');
+    setTimeout(goToChat, 150);
+  }
+});
+
+renderQuickLogin();
+
+function setTab(which) {
+  const isLogin = which === 'login';
+  $('tabLogin').classList.toggle('active', isLogin);
+  $('tabRegister').classList.toggle('active', !isLogin);
+  $('panelLogin').classList.toggle('active', isLogin);
+  $('panelRegister').classList.toggle('active', !isLogin);
+  hideMsg($('msgLogin'));
+  hideMsg($('msgRegister'));
+}
+$('tabLogin').addEventListener('click', () => setTab('login'));
+$('tabRegister').addEventListener('click', () => setTab('register'));
+
+function showMsg(el, type, text) { el.className = 'auth-msg show ' + type; el.textContent = text; }
+function hideMsg(el) { el.className = 'auth-msg'; }
+
+function setupPasswordToggle(btnId, inputId) {
+  const btn = $(btnId); const input = $(inputId);
+  if (!btn || !input) return;
+  btn.addEventListener('click', function() {
+    const revealed = btn.classList.toggle('revealed');
+    input.type = revealed ? 'text' : 'password';
+    btn.setAttribute('aria-label', revealed ? 'Sembunyikan password' : 'Tampilkan password');
+  });
+}
+setupPasswordToggle('toggleLoginPw', 'loginPassword');
+setupPasswordToggle('toggleRegPw', 'regPassword');
+
+const errorId = {
+  'auth/email-already-in-use':'Email sudah terdaftar. Coba login.',
+  'auth/invalid-email':'Format email tidak valid.',
+  'auth/weak-password':'Password terlalu lemah (min 6 karakter).',
+  'auth/invalid-credential':'Email atau password salah.',
+  'auth/user-not-found':'Email atau password salah.',
+  'auth/wrong-password':'Email atau password salah.',
+  'auth/too-many-requests':'Terlalu banyak percobaan. Coba lagi nanti.',
+  'auth/network-request-failed':'Koneksi internet bermasalah.',
+  'auth/unauthorized-domain':'Domain belum diizinkan di Firebase.'
+};
+const msgErr = (err) => errorId[err?.code] || err?.message || 'Terjadi kesalahan.';
+
+async function saveUserInfoAfterLogin(user, password) {
+  const email = user.email || '';
+  const fallbackName = email.split('@')[0] || 'User';
+  saveLastAccount({ email, password: password || '', username: user.displayName || fallbackName, photoBase64: user.photoURL || null });
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      saveLastAccount({ email, password: password || '', username: data.username || fallbackName, photoBase64: data.photoBase64 || user.photoURL || null });
+    }
+  } catch (_) {}
+}
+
+$('formLogin').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('msgLogin'); hideMsg(msg);
+  const btn = $('btnLogin');
+  if (btn.disabled) return;
+  btn.disabled = true; btn.textContent = 'Masuk...';
+  showLoading('Memproses...');
+  const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value;
+  const remember = $('rememberPw').checked;
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    if (remember) await saveUserInfoAfterLogin(cred.user, password);
+    else clearLastAccount();
+    goToChat();
+  } catch (err) {
+    hideLoading();
+    showMsg(msg, 'error', msgErr(err));
+    $('loginPassword').value = '';
+    $('loginPassword').focus();
+    btn.disabled = false; btn.textContent = 'Masuk';
+  }
+});
+
+$('formRegister').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('msgRegister'); hideMsg(msg);
+  const btn = $('btnRegister');
+  if (btn.disabled) return;
+  const username = $('regUsername').value.trim();
+  const email = $('regEmail').value.trim();
+  const password = $('regPassword').value;
+  const remember = $('rememberPw').checked;
+  if (!/^[a-zA-Z0-9\s]{3,20}$/.test(username)) { showMsg(msg, 'error', 'Username harus 3–20 karakter (huruf, angka, spasi).'); return; }
+  btn.disabled = true; btn.textContent = 'Mendaftar...';
+  showLoading('Membuat akun...');
+  sessionStorage.setItem('bs_registering', '1');
+  let cred;
+  try { cred = await createUserWithEmailAndPassword(auth, email, password); }
+  catch (err) {
+    sessionStorage.removeItem('bs_registering');
+    hideLoading();
+    showMsg(msg, 'error', msgErr(err));
+    btn.disabled = false; btn.textContent = 'Daftar';
+    return;
+  }
+  try {
+    setLoadingText('Menyimpan data...');
+    await setDoc(doc(db, 'users', cred.user.uid), { username, email, createdAt: new Date().toISOString(), credits: 10 });
+    if (remember) saveLastAccount({ email, password, username, photoBase64: null });
+    else clearLastAccount();
+    sessionStorage.removeItem('bs_registering');
+    goToChat();
+  } catch (fsErr) {
+    try { await cred.user.delete(); } catch (_) {}
+    sessionStorage.removeItem('bs_registering');
+    hideLoading();
+    showMsg(msg, 'error', 'Gagal menyimpan data. Coba lagi.');
+    btn.disabled = false; btn.textContent = 'Daftar';
+  }
+});
+</script>
+
+</body>
+</html>

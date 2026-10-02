@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Brain Side</string>
+    <string name="title_activity_main">Brain Side</string>
+    <string name="package_name">com.brainside.app</string>
+    <string name="custom_url_scheme">com.brainside.app</string>
+</resources>
